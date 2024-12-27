@@ -1,4 +1,4 @@
-import { View, Text, TextInput, Button, FlatList, TouchableOpacity, StyleSheet } from 'react-native';
+import { View, Text, TextInput, Button, FlatList, TouchableOpacity, StyleSheet, Alert } from 'react-native';
 import { Header } from '@/components/header';
 import { useState, useEffect } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage'; // Importar AsyncStorage
@@ -69,6 +69,25 @@ export default function MinhaLista() {
     );
   };
 
+  // Apagar todos os itens
+
+  const novaLista = () => {
+    Alert.alert("Nova Lista", "Tem certeza? Isso apagará todos os itens atuais!",
+    [
+      {
+        text: 'Cancelar',
+        style: 'cancel',
+      },
+      {
+        text: 'Sim',
+        onPress: async () =>{
+          setItens([]);
+          await salvarItens([]);
+        }
+      }
+    ])
+  }
+
   return (
     <View style={styles.tela}>
       <View>
@@ -107,6 +126,13 @@ export default function MinhaLista() {
             </TouchableOpacity>
           )}
         />
+
+        <Button 
+          title='Criar nova lista'
+          color={colors.vermelho}
+          onPress={novaLista}
+        />
+
       </View>
     </View>
   );
@@ -116,20 +142,26 @@ const styles = StyleSheet.create({
   tela: {
     flex: 1,
   },
+
   container: {
     flex: 1,
     padding: 20,
   },
+
   input: {
     borderWidth: 1,
     borderColor: colors.azul,
     padding: 10,
     marginBottom: 10,
+    marginTop: 20,
     borderRadius: 5,
   },
+
   flatList: {
     marginTop: 15,
+    marginBottom: 10,
   },
+
   itemDaLista: {
     flexDirection: 'row',
     justifyContent: 'space-between',
@@ -144,25 +176,30 @@ const styles = StyleSheet.create({
     shadowRadius: 4,
     elevation: 3,
   },
+
   itemTexto: {
     fontSize: 16,
     color: colors.preto,
   },
+  
   itemComprado: {
     textDecorationLine: 'line-through',
     color: colors.preto,
     opacity: 0.5,
   },
+
   itemBackgroundComprado: {
     backgroundColor: colors.bgVerde,
     borderColor: '#c3e6cb',
     borderWidth: 1,
   },
+
   excluirButton: {
     backgroundColor: colors.vermelho,
     padding: 8,
     borderRadius: 5,
   },
+
   excluirTexto: {
     color: colors.branco,
     fontWeight: 'bold',
