@@ -1,4 +1,4 @@
-import { View, Text, TextInput, Button, FlatList, TouchableOpacity, StyleSheet, Alert } from 'react-native';
+import { View, Text, TextInput, Button, FlatList, TouchableOpacity, StyleSheet, Alert, Pressable } from 'react-native';
 import { Header } from '@/components/header';
 import { useState, useEffect } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage'; // Importar AsyncStorage
@@ -95,6 +95,10 @@ export default function MinhaLista() {
       </View>
       <View style={styles.container}>
 
+        <Pressable onPress={novaLista} style={styles.btnNovaLista}>
+          <Text style={styles.textoNovaLista}>Criar nova lista</Text>
+        </Pressable>
+
         <TextInput
           style={styles.input}
           placeholder="Digite um item"
@@ -125,12 +129,6 @@ export default function MinhaLista() {
               </TouchableOpacity>
             </TouchableOpacity>
           )}
-        />
-
-        <Button 
-          title='Criar nova lista'
-          color={colors.vermelho}
-          onPress={novaLista}
         />
 
       </View>
@@ -204,4 +202,20 @@ const styles = StyleSheet.create({
     color: colors.branco,
     fontWeight: 'bold',
   },
+
+  btnNovaLista:{
+    backgroundColor: colors.vermelho,
+    width: 150,
+    height: 40,
+    paddingHorizontal: 20,
+    justifyContent: 'center',
+    alignItems: 'center',
+    borderRadius: 4,
+    alignSelf: 'flex-end',
+  },
+
+  textoNovaLista:{
+    color: colors.branco,
+    fontWeight: 'bold'
+  }
 });
