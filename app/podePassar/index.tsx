@@ -1,8 +1,9 @@
 import { Header } from '@/components/header';
 import { colors } from '@/constants/colors';
+import { Feather } from '@expo/vector-icons';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useEffect, useState } from 'react';
-import { View, Text, TextInput, Pressable, StyleSheet, Button, FlatList } from 'react-native';
+import { View, Text, TextInput, Pressable, StyleSheet, Button, FlatList, Alert } from 'react-native';
 
 
 type ItemDaCompra = {
@@ -75,6 +76,8 @@ export default function PodePassar() {
     } catch (error) {
       console.log('Erro ao salvar o valor disponível: ', error)
     }
+
+    setValorDisponivel('');
   }
 
   // Função para carregar um valor para gastar
@@ -90,35 +93,56 @@ export default function PodePassar() {
   };
 
   useEffect(() => {
-    const carregarValorDisponivel = async () => {
-      try {
-        const valorSalvo = await AsyncStorage.getItem('@valorDisponivel');
-        if (valorSalvo) {
-          setValorDisponivelSalvo(valorSalvo);
-        }
-      } catch (error) {
-        console.log('Erro ao carregar valor disponível:', error);
-      }
-    };
-  
     carregarValorDisponivel();
   }, []);
 
+  const excluirItem = (id: string) => {
+    setItens(itens.filter((item) => item.id !== id));
+  };
+
+
+  // Função para calcular o valor total dos itens
+  const calcularValorTotal = () => {
+    return itens.reduce((soma, item) => {
+      const quantidade = Number(item.qtd.replace(',', '.'));
+      const valor = Number(item.valor.replace(',', '.'));
+      return soma + quantidade * valor;
+    }, 0);
+  };
+
+  const valorTotalTodosItens = calcularValorTotal().toFixed(2);
+  const valorRestante = Number(valorDisponivel) - Number(valorTotalTodosItens);
+  const porcentagemRestante = (valorRestante / Number(valorDisponivel)) * 100;
+
+  // Lógica para definir a cor
+  const definirCorTexto = () => {
+    if (porcentagemRestante > 20) {
+      return 'green'; 
+    } else if (porcentagemRestante >= 8 && porcentagemRestante <= 20) {
+      return 'orange'; 
+    } else if (porcentagemRestante < 8 && porcentagemRestante >= 0) {
+      return 'red';
+    } else {
+      // Caso o valor restante seja negativo (ultrapassou o valor disponível)
+      Alert.alert('Atenção!', 'Você ultrapassou o valor disponível.');
+      return 'red';
+    }
+  };
+
  return (
-    <View>
+    <View style={{flex: 1 }}>
         <View>
           <Header title='Pode Passar!' />
         </View>
 
         <View style={styles.contentHeader}>
 
-            <View>
+            <View style={styles.conteinerValorGastar}>
               <View style={styles.contentValorGastar}>
                 <TextInput
                   placeholder='R$ a ser gasto'
-                  style={styles.textoValorDisponivel}
+                  style={styles.inputValorDisponivel}
                   keyboardType='numeric'
-                  value={valorDisponivel}
                   onChangeText={setValorDisponivel}
                 />
                 <Pressable style={styles.btnSalvarValorGastar}>
@@ -130,7 +154,11 @@ export default function PodePassar() {
                   </Text>
                 </Pressable>
               </View>
-              <Text>Valor disponível: R$ {valorDisponivelSalvo}</Text>
+              <Text style={styles.textoValorDisponivel}>Valor disponível: R$ 
+                <Text style={[styles.valorVariavel, { color: definirCorTexto() }]}>
+                  {valorRestante.toFixed(2).replace('.', ',')} {/* Formatação brasileira */}
+                </Text>
+              </Text>
             </View>
 
           <TextInput
@@ -154,6 +182,7 @@ export default function PodePassar() {
               <TextInput
                 placeholder='Qtd'
                 style={styles.inputQtd}
+                keyboardType='numeric'
                 value={quantidade}
                 onChangeText={(text) => setQuantidade(text)}
               />
@@ -167,13 +196,46 @@ export default function PodePassar() {
 
         </View>
 
-        <FlatList
-          data={itens}
-          keyExtractor={(item) => item.id}
-          renderItem={({ item }) => (
-            <Text> {item.nome} - {item.qtd} - {item.valor} </Text>
-          )}
-        />
+        <View>
+          <View style={styles.contentHeaderTabela}>
+            <Text style={styles.tituloTabela}>Nome</Text>
+            <Text style={styles.tituloTabela}>Qtd</Text>
+            <Text style={styles.tituloTabela}>Valor Un.</Text>
+            <Text style={styles.tituloTabela}>Total</Text>
+            <Text style={styles.tituloTabela}>Ação</Text>
+          </View>
+
+          <View style={{ flex: 1 }}>
+            <FlatList
+              style={styles.flatList}
+              data={itens}
+              keyExtractor={(item) => item.id}
+              renderItem={({ item }) => {
+                const quantidade = Number(item.qtd.replace(',', '.'));
+                const valor = Number(item.valor.replace(',', '.'));
+                const total = (quantidade * valor).toFixed(2);
+
+                return (
+                  <View style={styles.corpoTabela}>
+                    <Text style={styles.textoTabela}>{item.nome}</Text>
+                    <Text style={styles.textoTabela}>{item.qtd}</Text>
+                    <Text style={styles.textoTabela}>{item.valor}</Text>
+                    <Text style={styles.textoTabela}>R$ {total.replace('.', ',')}</Text>
+                    <Text style={styles.excluiritem} onPress={() => excluirItem(item.id)}>
+                      <Feather name="trash-2" size={30} />
+                    </Text>
+                  </View>
+                );
+              }}
+            />
+          </View>
+        </View>
+
+        <View>
+          <Text>Btn para nova lista</Text>
+          <Text>Btn para nova lista</Text>
+          <Text>Btn para nova lista</Text>
+        </View>
 
     </View>
   );
@@ -186,16 +248,28 @@ const styles = StyleSheet.create({
     marginBottom: 10
   },
 
-  contentValorGastar:{
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
+  conteinerValorGastar:{
     borderBottomWidth: 1,
     borderBottomColor: colors.bgCinza,
     marginBottom: 10,
   },
 
+  contentValorGastar:{
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  },
+
   textoValorDisponivel:{
+    fontSize: 18
+  },
+
+  valorVariavel:{
+    color: colors.bgVerde,
+    paddingLeft: 10,
+  },
+
+  inputValorDisponivel:{
     width: 180,
     height: 60,
     borderColor: colors.azul,
@@ -280,5 +354,40 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     backgroundColor: colors.bgCinza,
     borderRadius: 5
+  },
+
+  flatList:{
+    marginHorizontal: 2,
+    marginBottom: 10,
+  },
+
+  contentHeaderTabela:{
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    padding: 10, 
+    backgroundColor: colors.bgCinza
+  },
+
+  tituloTabela:{
+    fontWeight: 'bold'
+  },
+
+  excluiritem: {
+    color: colors.vermelho,
+    fontWeight: 'bold',
+  },
+
+  textoTabela:{
+    flex: 1,
+    paddingBottom: 5,
+  },
+
+  corpoTabela:{
+    flexDirection: 'row', 
+    justifyContent: 'space-between', 
+    alignItems: 'center',
+    padding: 10,
+    borderBottomWidth: 1,
+    borderColor: colors.azul
   }
 })

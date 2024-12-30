@@ -22,7 +22,7 @@ export function Header({ title }: HeaderProps){
             <View style={styles.content}>
                 <View style={styles.row}>
                     <Pressable onPress={() => router.back()}>
-                        <Feather name="arrow-left" size={40} color="#fff" />
+                        <Feather name="arrow-left" size={30} color="#fff" />
                     </Pressable>
 
                     <Text style={styles.title}>{title}</Text>
@@ -38,14 +38,14 @@ const styles = StyleSheet.create({
         backgroundColor: colors.azul,
         borderBottomRightRadius: 100,
         borderBottomLeftRadius: 0,
-        marginBottom: 14,
-        paddingTop: Platform.OS === 'android' ? StatusBar.currentHeight! + 34 : 34,
+        marginBottom: 10,
+        paddingTop: Platform.OS === 'android' ? StatusBar.currentHeight! + 25 : 25,
     },
 
     content:{
         paddingLeft: 16,
         paddingRight: 16,
-        paddingBottom: 34,
+        paddingBottom: 25,
         borderBottomRightRadius: 14,
         borderBottomLeftRadius: 14,
     },
@@ -58,7 +58,7 @@ const styles = StyleSheet.create({
     },
 
     title:{
-        fontSize: 30,
+        fontSize: 25,
         fontWeight: 'bold',
         color: colors.branco,
     }
