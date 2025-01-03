@@ -128,6 +128,17 @@ export default function PodePassar() {
     }
   };
 
+  // Funções para aumentar e diminuir a quantidade
+
+  const aumentarQtd = () => {
+    const novaQtd = Math.min(999, Number(quantidade) + 1).toString();
+    setQuantidade(novaQtd);
+  }
+  const diminuirQtd = () => {
+    const novaQtd = Math.max(1, Number(quantidade) - 1).toString();
+    setQuantidade(novaQtd);
+  }
+
  return (
     <View>
       <View>
@@ -175,7 +186,7 @@ export default function PodePassar() {
             onChangeText={(text) => setValor(text)}
           />
           <View style={styles.viewQtd}>
-            <Pressable style={styles.btnQtd}>
+            <Pressable style={styles.btnQtd} onPress={diminuirQtd}>
               <Text style={styles.textoBtnQtd}>-</Text>
             </Pressable>
             <TextInput
@@ -185,7 +196,7 @@ export default function PodePassar() {
               value={quantidade}
               onChangeText={(text) => setQuantidade(text)}
             />
-            <Pressable style={styles.btnQtd}>
+            <Pressable style={styles.btnQtd} onPress={aumentarQtd}>
               <Text style={styles.textoBtnQtd}>+</Text>
             </Pressable>
           </View>
