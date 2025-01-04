@@ -24,6 +24,7 @@ export default function PodePassar() {
   const [valorDisponivelSalvo, setValorDisponivelSalvo] = useState<string>('');
 
   const [itens, setItens] = useState<ItemDaCompra[]>([]);
+  const [alertaExibido, setAlertaExibido] = useState(false);
 
 
   // Função para salvar os itens adicionados
@@ -39,39 +40,46 @@ export default function PodePassar() {
   const carregarItens = async () => {
     try {
       const dados = await AsyncStorage.getItem('@ListaPodePassar');
-      if(dados){
-        setItens(JSON.parse(dados))
+      if (dados) {
+        setItens(JSON.parse(dados));
       }
     } catch (error) {
       console.log('Erro ao carregar ListaPodePassar: ', error);
     }
-  }
+  };
 
-  // Carregar itens quando o componente for montado
-  useEffect(() => {
-    carregarItens();
-  }, []);
-  
-  // Salvar itens sempre que a lista for alterada
-  useEffect(() => {
-    salvarItens(itens);
-  }, [itens]);
 
   // Função para adicionar um item
-  const addItem = () =>{
-    if(nome.trim()){
-      const novoItem = {id: Date.now().toString(), nome: nome, qtd: quantidade, valor: valor};
-      setItens([...itens, novoItem]);
+  const addItem = () => {
+    if (!nome.trim()) {
+        Alert.alert('Erro', 'O nome do item não pode estar vazio.');
+        return;
+    }
+    if (isNaN(Number(valor.replace(',', '.'))) || Number(valor.replace(',', '.')) <= 0) {
+      Alert.alert('Erro', 'O valor do item deve ser um número positivo.');
+      return;
+    }
+    if (isNaN(Number(quantidade)) || Number(quantidade) <= 0) {
+        Alert.alert('Erro', 'A quantidade deve ser um número positivo.');
+        return;
+    }
+    if (nome.trim()) {
+      const novoItem = { id: Date.now().toString(), nome, qtd: quantidade, valor };
+      const novaLista = [...itens, novoItem];
+      setItens(novaLista);
+      salvarItens(novaLista); // Salvar imediatamente
       setNome('');
-      setQuantidade('');
+      setQuantidade('1');
       setValor('');
     }
-  }
+  };
+
+
 
   // Função para salvar um valor para gastar
   const salvarValorDisponivel = async (valor: string) => {
     try {
-      await AsyncStorage.setItem('@ValorDisponivel', (valor))
+      await AsyncStorage.setItem('@ValorDisponivel', valor)
       setValorDisponivelSalvo(valor);
     } catch (error) {
       console.log('Erro ao salvar o valor disponível: ', error)
@@ -84,6 +92,7 @@ export default function PodePassar() {
   const carregarValorDisponivel = async () => {
     try {
       const valor = await AsyncStorage.getItem('@ValorDisponivel');
+      console.log('Valor carregado do AsyncStorage:', valor); 
       if (valor) {
         setValorDisponivel(valor);
       }
@@ -92,12 +101,10 @@ export default function PodePassar() {
     }
   };
 
-  useEffect(() => {
-    carregarValorDisponivel();
-  }, []);
-
   const excluirItem = (id: string) => {
-    setItens(itens.filter((item) => item.id !== id));
+    const novaLista = itens.filter((item) => item.id !== id);
+    setItens(novaLista);
+    salvarItens(novaLista);
   };
 
 
@@ -111,8 +118,9 @@ export default function PodePassar() {
   };
 
   const valorTotalTodosItens = calcularValorTotal().toFixed(2);
-  const valorRestante = Number(valorDisponivel) - Number(valorTotalTodosItens);
-  const porcentagemRestante = (valorRestante / Number(valorDisponivel)) * 100;
+  const valorRestante = Number(valorDisponivelSalvo || '0') - Number(valorTotalTodosItens);
+  const porcentagemRestante = (valorRestante / Number(valorDisponivelSalvo || '1')) * 100;
+
 
   // Lógica para definir a cor do valor disponível
   const definirCorTexto = () => {
@@ -123,13 +131,11 @@ export default function PodePassar() {
     } else if (porcentagemRestante < 8 && porcentagemRestante >= 0) {
       return 'red';
     } else {
-      // Alert.alert('Atenção!', 'Você ultrapassou o valor disponível.');
       return 'red';
     }
   };
 
   // Funções para aumentar e diminuir a quantidade
-
   const aumentarQtd = () => {
     const novaQtd = Math.min(999, Number(quantidade) + 1).toString();
     setQuantidade(novaQtd);
@@ -138,6 +144,80 @@ export default function PodePassar() {
     const novaQtd = Math.max(1, Number(quantidade) - 1).toString();
     setQuantidade(novaQtd);
   }
+
+  // Função para criar uma nova lista e salvar a que está criada
+
+  const salvarHistorico = async (lista: ItemDaCompra[]) => {
+    try {
+      const historico = await AsyncStorage.getItem('@HistoricoCompras');
+      const historicoAtualizado = historico ? JSON.parse(historico) : [];
+      historicoAtualizado.push({ lista, data: new Date().toISOString() });
+      await AsyncStorage.setItem('@HistoricoCompras', JSON.stringify(historicoAtualizado));
+    } catch (error) {
+      console.log('Erro ao salvar histórico: ', error);
+    }
+  };
+  
+  const salvarListaECriarUmaNova = async () => {
+    try {
+      if (itens.length > 0) {
+        await salvarHistorico(itens);
+      }
+      setItens([]); // Limpa a lista atual
+      await AsyncStorage.removeItem('@ListaPodePassar'); // Remove do armazenamento
+      setValorDisponivelSalvo(''); // Limpa o valor disponível
+      await AsyncStorage.removeItem('@ValorDisponivel');
+      Alert.alert('Nova lista', 'A lista anterior foi salva nas Compras Anteriores.');
+    } catch (error) {
+      console.log('Erro ao criar nova lista: ', error);
+    }
+  };
+
+
+  useEffect(() => {
+    const valorTotalTodosItens = calcularValorTotal();
+    const valorRestante = Number(valorDisponivelSalvo) - valorTotalTodosItens;
+
+    if (valorRestante < 0 && !alertaExibido){
+      Alert.alert('Atenção!',  'Você ultapassou o valor dispinível!');
+      setAlertaExibido(true)
+    }else if (valorRestante >= 0 && alertaExibido) {
+      setAlertaExibido(false);
+    }
+  }, [itens, setValorDisponivelSalvo]);
+
+
+  useEffect(() => {
+    const carregarDados = async () => {
+      try {
+        const dadosItens = await AsyncStorage.getItem('@ListaPodePassar');
+        if (dadosItens) setItens(JSON.parse(dadosItens));
+  
+        const valorSalvo = await AsyncStorage.getItem('@ValorDisponivel');
+        if (valorSalvo) setValorDisponivelSalvo(valorSalvo);
+  
+        const historico = await AsyncStorage.getItem('@HistoricoCompras');
+        if (historico) {
+          console.log('Histórico carregado:', JSON.parse(historico));
+        }
+      } catch (error) {
+        console.log('Erro ao carregar dados: ', error);
+      }
+    };
+  
+    carregarDados();
+  }, []);
+
+
+  // Carregar itens quando o componente for montado
+  useEffect(() => {
+    carregarItens();
+  }, []);
+  
+  // Salvar itens sempre que a lista for alterada
+  useEffect(() => {
+    salvarItens(itens);
+  }, [itens]);
 
  return (
     <View>
@@ -215,7 +295,7 @@ export default function PodePassar() {
           <Text style={styles.tituloTabela}>Qtd</Text>
           <Text style={styles.tituloTabela}>Valor Un.</Text>
           <Text style={styles.tituloTabela}>Total</Text>
-          <Text style={styles.tituloTabela}>Ação</Text>
+          <Text style={styles.tituloTabela}>           </Text>
         </View>
 
         <View>
@@ -240,14 +320,15 @@ export default function PodePassar() {
                 </View>
               );
             }}
+            ListEmptyComponent={<Text style={{ textAlign: 'center', padding: 15 }}>Nenhum item na lista.</Text>}
           />
         </View>
       </View>
 
       <View>
-        <Text>Btn para nova lista</Text>
-        <Text>Btn para nova lista</Text>
-        <Text>Btn para nova lista</Text>
+        <Pressable style={styles.btnNovaLista} onPress={salvarListaECriarUmaNova}>
+          <Text style={styles.textoNovaLista}>Nova lista</Text>
+        </Pressable>
       </View>
 
     </View>
@@ -419,5 +500,19 @@ const styles = StyleSheet.create({
     padding: 10,
     borderBottomWidth: 1,
     borderColor: colors.azul
+  },
+
+  btnNovaLista:{
+    margin: 'auto',
+    backgroundColor: colors.vermelho,
+    justifyContent: 'center',
+    alignItems: 'center',
+    borderRadius: 10,
+  },
+
+  textoNovaLista:{
+    color: colors.branco,
+    paddingHorizontal: 50,
+    paddingVertical: 15
   }
 })
