@@ -1,5 +1,5 @@
 import { Header } from '@/components/header';
-import { colors } from '@/constants/colors';
+import { colors } from '../../constants/colors';
 import { Feather } from '@expo/vector-icons';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useEffect, useState } from 'react';
