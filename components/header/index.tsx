@@ -36,18 +36,14 @@ export function Header({ title }: HeaderProps){
 const styles = StyleSheet.create({
     container:{
         backgroundColor: colors.azul,
-        borderBottomRightRadius: 100,
-        borderBottomLeftRadius: 0,
         marginBottom: 10,
-        paddingTop: Platform.OS === 'android' ? StatusBar.currentHeight! + 25 : 25,
+        paddingTop: Platform.OS === 'android' ? StatusBar.currentHeight! + 5 : 5,
     },
 
     content:{
-        paddingLeft: 16,
-        paddingRight: 16,
-        paddingBottom: 25,
-        borderBottomRightRadius: 14,
-        borderBottomLeftRadius: 14,
+        paddingLeft: 10,
+        paddingRight: 10,
+        paddingBottom: 15,
     },
 
     row:{
