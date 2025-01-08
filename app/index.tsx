@@ -15,45 +15,49 @@ export default function Index() {
       </View>
 
       <View style={styles.divBotoes}>
-        <Link href={"/minhaLista"} asChild>
-          <Pressable style={styles.botao}>
-            <Image
-              source={require('../assets/images/listaCompras.png')}
-              style={styles.imagemBtn}
-            />
-            <Text style={styles.botaoText}>Minha Lista</Text>
-          </Pressable>
-        </Link>
-
-        <Link href={"/podePassar"} asChild>
-          <Pressable style={styles.botao}>
-            <Image
-              source={require('../assets/images/carrinhoPP.png')}
-              style={styles.imagemBtn}
-            />
-            <Text style={styles.botaoText}>PodePassar</Text>
-          </Pressable>
-        </Link>
-
-        <Link href={"/promocao"} asChild>
-          <Pressable style={styles.botao}>
-          <Image
-              source={require('../assets/images/promocao.png')}
-              style={styles.imagemBtn}
-            />
-            <Text style={styles.botaoText}>Promoções</Text>
-          </Pressable>
-        </Link>
-
-        <Link href={"/comprasAnteriores"} asChild>
-          <Pressable style={styles.botao}>
-            <Image
-                source={require('../assets/images/comprasAnteriores.png')}
+        <View style={styles.containerDosBotoes}>
+          <Link href={"/minhaLista"} asChild>
+            <Pressable style={styles.botao}>
+              <Image
+                source={require('../assets/images/listaCompras.png')}
                 style={styles.imagemBtn}
               />
-            <Text style={styles.botaoText}>Compras Anteriores</Text>
-          </Pressable>
-        </Link>
+              <Text style={styles.botaoText}>Minha Lista</Text>
+            </Pressable>
+          </Link>
+
+          <Link href={"/podePassar"} asChild>
+            <Pressable style={styles.botao}>
+              <Image
+                source={require('../assets/images/carrinhoPP.png')}
+                style={styles.imagemBtn}
+              />
+              <Text style={styles.botaoText}>PodePassar</Text>
+            </Pressable>
+          </Link>
+        </View>
+
+        <View style={styles.containerDosBotoes}>
+          <Link href={"/promocao"} asChild>
+            <Pressable style={styles.botao}>
+            <Image
+                source={require('../assets/images/promocao.png')}
+                style={styles.imagemBtn}
+              />
+              <Text style={styles.botaoText}>Promoções</Text>
+            </Pressable>
+          </Link>
+
+          <Link href={"/comprasAnteriores"} asChild>
+            <Pressable style={styles.botao}>
+              <Image
+                  source={require('../assets/images/comprasAnteriores.png')}
+                  style={styles.imagemBtn}
+                />
+              <Text style={styles.botaoText}>Compras Anteriores</Text>
+            </Pressable>
+          </Link>
+        </View>
       </View>
 
     </View>
@@ -68,10 +72,9 @@ const styles = StyleSheet.create({
   
   headerInicio:{
     width: '100%',
-    flexDirection: 'row',
+    flexDirection: 'column',
     alignItems: 'center',
     justifyContent: 'space-around',
-    backgroundColor: colors.preto
   },
 
   imagem:{
@@ -80,33 +83,47 @@ const styles = StyleSheet.create({
   },
 
   titulo:{
-    fontSize: 35,
+    fontSize: 55,
     fontWeight: 'bold',
-    color: colors.branco,
+    color: colors.preto,
     fontFamily: 'Cochin',
+    textShadowColor: 'rgba(15, 15, 15, 0.56)',
+    textShadowRadius: 3,
+    textShadowOffset: {width: 3, height: 3}
   },
 
   divBotoes:{
     width: '100%',
     flex: 1,
     alignItems: 'center',
+    marginTop: 100,
+    paddingHorizontal: 10,
+  },
+
+  containerDosBotoes:{
+    width: '100%',
+    flexDirection: 'row',
+    justifyContent: 'space-around',
+    alignItems: 'center',
+    marginBottom: 10,
   },
 
   botao:{
     flex: 1,
     width: '100%',
-    justifyContent: 'space-between',
+    height: 140,
+    justifyContent: 'center',
     alignItems: 'center',
-    paddingLeft: 10,
-    paddingRight: 20,
-    backgroundColor: colors.branco,
-    borderBottomWidth: 2,
-    borderBottomColor: '#000',
-    flexDirection: 'row'
+    paddingHorizontal: 10,
+    borderRadius: 10,
+    boxShadow: '3px 3px 10px rgba(0,0,0,0.75)',
+    margin: 5,
+    flexDirection: 'column',
+
   },
 
   botaoText:{
-    fontSize: 30
+    fontSize: 20
   },
 
   imagemBtn:{
