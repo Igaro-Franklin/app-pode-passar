@@ -1,18 +1,20 @@
 import { View, Text, TextInput, Button, FlatList, TouchableOpacity, StyleSheet, Alert, Pressable } from 'react-native';
 import { Header } from '@/components/header';
 import { useState, useEffect } from 'react';
-import AsyncStorage from '@react-native-async-storage/async-storage'; // Importar AsyncStorage
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { colors } from '@/constants/colors';
 import { Feather } from '@expo/vector-icons';
 
 type Task = {
   id: string;
   title: string;
+  qtd: number;
   comprado: boolean;
 };
 
 export default function MinhaLista() {
   const [item, setItem] = useState<string>('');
+  const [qtd, setQtd] = useState<number>(1);
   const [itens, setItens] = useState<Task[]>([]);
 
   // Função para salvar itens no AsyncStorage
@@ -29,7 +31,7 @@ export default function MinhaLista() {
     try {
       const dados = await AsyncStorage.getItem('@itens');
       if (dados) {
-        setItens(JSON.parse(dados)); // Atualiza o estado com os dados salvos
+        setItens(JSON.parse(dados));
       }
     } catch (error) {
       console.error('Erro ao carregar itens do AsyncStorage:', error);
@@ -49,7 +51,7 @@ export default function MinhaLista() {
   // Adicionar um item
   const adicionarItem = () => {
     if (item.trim()) {
-      const novoItem = { id: Date.now().toString(), title: item, comprado: false };
+      const novoItem = { id: Date.now().toString(), title: item, qtd: qtd, comprado: false };
       setItens([...itens, novoItem]);
       setItem('');
     }
@@ -88,6 +90,16 @@ export default function MinhaLista() {
     ])
   }
 
+  // Funções para aumentar e diminuir a quantidade
+  const aumentarQtd = () => {
+    const novaQtd = Math.min(999, Number(qtd) + 1).toString();
+    setQtd(Number(novaQtd));
+  }
+  const diminuirQtd = () => {
+    const novaQtd = Math.max(1, Number(qtd) - 1).toString();
+    setQtd(Number(novaQtd));
+  }
+
   return (
     <View style={styles.tela}>
       <View>
@@ -105,6 +117,21 @@ export default function MinhaLista() {
           value={item}
           onChangeText={setItem}
         />
+        <View style={styles.viewQtd}>
+          <Pressable style={styles.btnQtd} onPress={diminuirQtd}>
+            <Text style={styles.textoBtnQtd}>-</Text>
+          </Pressable>
+          <TextInput
+            placeholder='Qtd'
+            style={styles.inputQtd}
+            keyboardType='numeric'
+            value={qtd.toString()}
+            onChangeText={(text) => setQtd(Number(text))}
+          />
+          <Pressable style={styles.btnQtd} onPress={aumentarQtd}>
+            <Text style={styles.textoBtnQtd}>+</Text>
+          </Pressable>
+        </View>
 
         <Button title="Adicionar item" onPress={adicionarItem} />
 
@@ -122,6 +149,7 @@ export default function MinhaLista() {
               >
                 {item.title}
               </Text>
+              <Text>{item.qtd} un. </Text>
               <TouchableOpacity onPress={() => excluirItem(item.id)} style={styles.excluirButton}>
                 <Text style={styles.excluirTexto}>
                   <Feather name='trash-2' size={20} />
@@ -217,5 +245,38 @@ const styles = StyleSheet.create({
   textoNovaLista:{
     color: colors.branco,
     fontWeight: 'bold'
-  }
+  },
+
+  viewQtd:{
+    flexDirection: 'row',
+    justifyContent: 'space-around',
+    alignItems: 'center',
+    gap: 10,
+    marginBottom: 20
+  },
+
+  inputQtd:{
+    width: 60,
+    height: 50,
+    borderColor: colors.azul,
+    borderWidth: 1,
+    borderRadius: 10,
+    paddingVertical: 5,
+    paddingHorizontal: 10
+  },
+
+  textoBtnQtd:{
+    fontSize: 30,
+    fontWeight: 'bold'
+  },
+
+  btnQtd:{
+    width: 50,
+    height: 50,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: colors.bgCinza,
+    borderRadius: 5
+  },
+
 });
