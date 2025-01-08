@@ -1,7 +1,9 @@
 import { useEffect, useState } from 'react';
-import { View, Text, FlatList, StyleSheet } from 'react-native';
+import { View, Text, FlatList, StyleSheet, Button } from 'react-native';
 import { Header } from '@/components/header';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { Feather } from '@expo/vector-icons';
+import { colors } from '@/constants/colors';
 
 export default function ComprasAnteriores() {
   interface Produto {
@@ -33,6 +35,16 @@ export default function ComprasAnteriores() {
     carregarHistorico();
   }, []);
 
+  const handleDelete = async (id: string) => {
+    const novoHistorico = historico.filter(item => item.data !== id);
+    setHistorico(novoHistorico);
+    try {
+      await AsyncStorage.setItem('@HistoricoCompras', JSON.stringify(novoHistorico));
+    } catch (error) {
+      console.log('Erro ao salvar histórico: ', error);
+    }
+  };
+
   return (
     <View>
       <Header title="Compras Anteriores" />
@@ -43,7 +55,10 @@ export default function ComprasAnteriores() {
         keyExtractor={(item, index) => index.toString()}
         renderItem={({ item }) => (
           <View style={styles.item}>
-            <Text style={styles.data}>Data: {new Date(item.data).toLocaleDateString()}</Text>
+            <View style={styles.data}>
+              <Text style={styles.textData}>Data: {new Date(item.data).toLocaleDateString()}</Text>
+              <Text onPress={() => handleDelete(item.data)}><Feather name='trash-2' size={30} style={{ color: colors.vermelho }} /></Text>
+            </View>
 
             <View style={styles.tabela}>
               <View style={styles.cabecalho}>
@@ -60,6 +75,8 @@ export default function ComprasAnteriores() {
                 </View>
               ))}
             </View>
+
+            
           </View>
         )}
         ListEmptyComponent={<Text style={styles.vazio}>Nenhuma compra anterior.</Text>}
@@ -76,6 +93,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#fff',
     marginBottom: 100,
   },
+
   item: {
     marginBottom: 20,
     borderWidth: 1,
@@ -83,24 +101,36 @@ const styles = StyleSheet.create({
     borderRadius: 5,
     padding: 10,
   },
+
   data: {
-    fontSize: 16,
-    fontWeight: 'bold',
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
     marginBottom: 10,
+    paddingHorizontal: 10,
   },
+
+  textData: {
+    fontSize: 18,
+    fontWeight: 'bold',
+  },
+
   tabela: {
     marginTop: 10,
   },
+
   cabecalho: {
     flexDirection: 'row',
     backgroundColor: '#f0f0f0',
     padding: 10,
   },
+
   cabecalhoItem: {
     flex: 1,
     fontWeight: 'bold',
     
   },
+
   linha: {
     flexDirection: 'row',
     paddingVertical: 10,
@@ -108,14 +138,17 @@ const styles = StyleSheet.create({
     borderBottomColor: '#ddd',
     marginLeft: 10,
   },
+
   coluna: {
     flex: 1,
     
   },
+
   vazio: {
     textAlign: 'center',
     marginTop: 20,
     fontSize: 18,
     color: '#999',
   },
+
 });
